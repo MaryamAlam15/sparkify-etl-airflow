@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                LoadDimensionOperator, DataQualityOperator)
@@ -13,13 +13,18 @@ AWS_SECRET = os.environ.get('AWS_SECRET')
 
 default_args = {
     'owner': 'udacity',
+    'depends_on_past': False,
+    'retries': 3,
+    'retry_delay': timedelta(minutes=5),
+    'catchup': False,
+    'email_on_retry': False,
     'start_date': datetime(2019, 1, 1)
 }
 
 dag = DAG('udac_example_dag',
           default_args=default_args,
           description='Load and transform data in Redshift with Airflow',
-                    schedule_interval='0 * * * *'
+          schedule_interval='0 * * * *'
           )
 
 start_operator = DummyOperator(task_id='Begin_execution', dag=dag)
@@ -87,20 +92,6 @@ load_songplays_table = LoadFactOperator(
     dag=dag,
     redshift_conn_id="redshift",
     load_fact_sql=SqlQueries.songplay_table_insert
-    # create_table_sql="""
-    # DROP TABLE IF EXISTS public.songplays;
-    # CREATE TABLE public.songplays (
-    #     songplay_id int4 IDENTITY(1,1) PRIMARY KEY,
-    #     start_time timestamp NOT NULL,
-    #     user_id int4 NOT NULL,
-    #     "level" varchar(256),
-    #     song_id varchar(256),
-    #     artist_id varchar(256),
-    #     session_id int4,
-    #     location varchar(256),
-    #     user_agent varchar(256)
-    # );
-    # """
 )
 
 load_user_dimension_table = LoadDimensionOperator(
