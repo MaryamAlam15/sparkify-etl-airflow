@@ -1,10 +1,9 @@
 class SqlQueries:
     songplay_table_insert = ("""
-        DROP TABLE IF EXISTS public.songplays; 
-        CREATE TABLE public.songplays (
-            songplay_id varchar(226),
+        CREATE TABLE IF NOT EXISTS public.songplays (
+            songplay_id varchar(226) NOT NULL,
             start_time timestamp NOT NULL,
-            user_id int4,
+            user_id int4 NOT NULL,
             "level" varchar(256),
             song_id varchar(256),
             artist_id varchar(256),
@@ -25,7 +24,8 @@ class SqlQueries:
                 events.user_agent
                 FROM (SELECT TIMESTAMP 'epoch' + ts/1000 * interval '1 second' AS start_time, *
             FROM staging_events
-            WHERE page='NextSong') events
+            WHERE page='NextSong'
+            AND session_id <> NULL) events
             LEFT JOIN staging_songs songs
             ON events.song = songs.title
                 AND events.artist = songs.artist_name
@@ -33,9 +33,8 @@ class SqlQueries:
     """)
 
     user_table_insert = ("""
-        DROP TABLE IF EXISTS public.users;
-        CREATE TABLE public.users (
-            user_id int4,
+        CREATE TABLE IF NOT EXISTS public.users (
+            user_id int4 NOT NULL,
             first_name varchar(256),
             last_name varchar(256),
             gender varchar(256),
@@ -45,11 +44,11 @@ class SqlQueries:
         SELECT distinct user_id, first_name, last_name, gender, level
         FROM staging_events
         WHERE page='NextSong'
+        and user_id <> NULL;
     """)
 
     song_table_insert = ("""
-        DROP TABLE IF EXISTS public.songs;
-        CREATE TABLE public.songs (
+        CREATE TABLE IF NOT EXISTS public.songs (
             song_id varchar(256) NOT NULL,
             title varchar(256),
             artist_id varchar(256),
@@ -63,8 +62,7 @@ class SqlQueries:
     """)
 
     artist_table_insert = ("""
-    DROP TABLE IF EXISTS public.artists;
-        CREATE TABLE public.artists (
+        CREATE TABLE IF NOT EXISTS public.artists (
             artist_id varchar(256) NOT NULL,
             name varchar(256),
             location varchar(256),
