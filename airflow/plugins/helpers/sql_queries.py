@@ -13,19 +13,18 @@ class SqlQueries:
         );
         INSERT INTO public.songplays (songplay_id, start_time, user_id, level, song_id, artist_id, session_id, location, user_agent)
         SELECT
-                md5(events.session_id || events.start_time) songplay_id,
+                md5(events.sessionId || events.start_time) songplay_id,
                 events.start_time, 
-                events.user_id, 
+                events.userId, 
                 events.level, 
-                songs.song_id, 
+                songs.song_id,
                 songs.artist_id, 
-                events.session_id, 
+                events.sessionId, 
                 events.location, 
-                events.user_agent
+                events.userAgent
                 FROM (SELECT TIMESTAMP 'epoch' + ts/1000 * interval '1 second' AS start_time, *
             FROM staging_events
-            WHERE page='NextSong'
-            AND session_id <> NULL) events
+            WHERE page='NextSong') events
             LEFT JOIN staging_songs songs
             ON events.song = songs.title
                 AND events.artist = songs.artist_name
@@ -38,13 +37,13 @@ class SqlQueries:
             first_name varchar(256),
             last_name varchar(256),
             gender varchar(256),
-            "level" varchar(256)
+            "level" varchar(256),
+            CONSTRAINT users_pkey PRIMARY KEY (user_id)
         );
         INSERT INTO public.users (user_id, first_name, last_name, gender, level)
-        SELECT distinct user_id, first_name, last_name, gender, level
+        SELECT distinct userId, firstName, lastName, gender, level
         FROM staging_events
-        WHERE page='NextSong'
-        and user_id <> NULL;
+        WHERE page='NextSong';
     """)
 
     song_table_insert = ("""
@@ -77,13 +76,14 @@ class SqlQueries:
     time_table_insert = ("""
     CREATE TABLE IF NOT EXISTS public.time 
     (
-        start_time timestamp PRIMARY KEY,
+        start_time timestamp NOT NULL,
         hour int,
         day int,
         week int,
         month int,
         year int,
-        weekday int
+        weekday int,
+        CONSTRAINT time_pkey PRIMARY KEY (start_time)
     );
     INSERT INTO public.time (start_time, hour, day, week, month, year, weekday)
         SELECT 

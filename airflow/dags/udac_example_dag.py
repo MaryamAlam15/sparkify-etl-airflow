@@ -37,27 +37,28 @@ stage_events_to_redshift = StageToRedshiftOperator(
     aws_credentials_id="aws_credentials",
     s3_bucket="udacity-dend",
     s3_key="log_data/",
+    meta_data_file='log_json_path.json',
     create_table_sql="""
     DROP TABLE IF EXISTS public.staging_events;
     CREATE TABLE public.staging_events (
 	artist varchar(256),
 	auth varchar(256),
-	first_name varchar(256),
+	firstName varchar(256),
 	gender varchar(256),
-	item_in_session int4,
-	last_name varchar(256),
+	itemInSession int4,
+	lastName varchar(256),
 	length numeric(18,0),
 	"level" varchar(256),
 	location varchar(256),
 	"method" varchar(256),
 	page varchar(256),
 	registration numeric(18,0),
-	session_id int4,
+	sessionId int4,
 	song varchar(256),
 	status int4,
 	ts int8,
-	user_agent varchar(256),
-	user_id int4
+	userAgent varchar(256),
+	userId int4
 );  
     """
 )
@@ -98,6 +99,7 @@ load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
+    table_name='public.users',
     insert_query_sql=SqlQueries.user_table_insert
 )
 
@@ -105,6 +107,7 @@ load_song_dimension_table = LoadDimensionOperator(
     task_id='Load_songs_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
+    table_name='public.songs',
     insert_query_sql=SqlQueries.song_table_insert
 )
 
@@ -112,6 +115,7 @@ load_artist_dimension_table = LoadDimensionOperator(
     task_id='Load_artist_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
+    table_name='public.artists',
     insert_query_sql=SqlQueries.artist_table_insert
 )
 
@@ -119,6 +123,7 @@ load_time_dimension_table = LoadDimensionOperator(
     task_id='Load_time_dim_table',
     dag=dag,
     redshift_conn_id="redshift",
+    table_name='public.time',
     insert_query_sql=SqlQueries.time_table_insert
 )
 

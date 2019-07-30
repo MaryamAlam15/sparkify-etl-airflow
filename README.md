@@ -35,7 +35,7 @@ In this project,
    - Initialize the Airflow DB
         > airflow initdb
    - run airflow schedular
-        > airflow schedular
+        > airflow scheduler
    - run airflow web server
         > airflow webserver
    - open ``http://0.0.0.0:8080/admin/`` your DAG will be listed.
